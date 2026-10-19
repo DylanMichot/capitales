@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capitales du Monde</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0f14; --surface: #13161e; --surface2: #1a1e28;
+    --border: rgba(255,255,255,0.07);
+    --gold: #c9963a; --gold-dim: rgba(201,150,58,0.15); --gold-border: rgba(201,150,58,0.3);
+    --text: #e8e2d4; --text-dim: #7a7060;
+    --red: #c0392b; --red-dim: rgba(192,57,43,0.15);
+    --green: #2ecc71; --green-dim: rgba(46,204,113,0.12);
+  }
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+    padding: 40px 16px 60px;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(201,150,58,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(46,204,113,0.04) 0%, transparent 50%);
+  }
+  .container { position: relative; z-index: 1; width: 100%; max-width: 520px; }
+
+  /* HEADER */
+  header { text-align: center; margin-bottom: 36px; }
+  .rule { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+  .rule::before, .rule::after { content: ''; flex: 1; height: 1px; }
+  .rule::before { background: linear-gradient(90deg, transparent, var(--gold-border)); }
+  .rule::after  { background: linear-gradient(90deg, var(--gold-border), transparent); }
+  h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.4rem,7vw,3.2rem); font-weight: 700; letter-spacing: 0.06em; color: var(--text); line-height: 1; }
+  .subtitle { font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); opacity: 0.7; margin-top: 6px; }
+
+  /* SETUP SCREEN */
+  #setup-screen { display: flex; flex-direction: column; align-items: center; gap: 28px; padding: 8px 0; }
+  .setup-label { font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; text-align: center; }
+  .setup-count-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
+  .count-display {
+    font-family: 'Cormorant Garamond', serif; font-size: 5rem; font-weight: 700;
+    color: var(--gold); line-height: 1; min-width: 120px; text-align: center;
+  }
+  .count-sub { font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); }
+  .slider-wrap { width: 100%; }
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 4px;
+    background: var(--surface2); border-radius: 2px; outline: none;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--gold); cursor: pointer;
+    box-shadow: 0 2px 8px rgba(201,150,58,0.4);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--gold); cursor: pointer; border: none;
+    box-shadow: 0 2px 8px rgba(201,150,58,0.4);
+  }
+  .preset-btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .preset-btn {
+    padding: 5px 14px; border-radius: 16px; font-family: 'DM Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
+    border: 1px solid var(--border); background: var(--surface2);
+    color: var(--text-dim); cursor: pointer; transition: all 0.15s;
+  }
+  .preset-btn:hover { border-color: var(--gold-border); color: var(--gold); }
+  .btn-start {
+    background: var(--gold); color: #0d0f14;
+    padding: 14px 48px; font-size: 0.8rem; letter-spacing: 0.15em;
+    box-shadow: 0 4px 20px rgba(201,150,58,0.35);
+  }
+  .btn-start:hover { opacity: 0.88; }
+
+  /* PROGRESS */
+  .progress-wrap { margin-bottom: 16px; }
+  .progress-track { height: 3px; background: var(--surface2); border-radius: 2px; overflow: hidden; display: flex; }
+  .progress-fill         { height: 100%; background: linear-gradient(90deg, var(--gold), #e8b84b); border-radius: 2px 0 0 2px; transition: width 0.5s cubic-bezier(.4,0,.2,1); }
+  .progress-fill-pending { height: 100%; background: rgba(201,150,58,0.25); transition: width 0.5s cubic-bezier(.4,0,.2,1); }
+
+  /* CARD */
+  .card-stage { perspective: 1400px; margin-bottom: 20px; }
+  .card { width: 100%; aspect-ratio: 5/3; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(.4,0,.2,1); cursor: pointer; user-select: none; }
+  .card.flipped { transform: rotateY(180deg); }
+  .card.no-click { pointer-events: none; }
+  .card-face { position: absolute; inset: 0; border-radius: 18px; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.04) inset; }
+  .card-front { background: linear-gradient(160deg, #1c2030 0%, #161922 100%); border: 1px solid rgba(201,150,58,0.18); }
+  .card-back  { background: linear-gradient(160deg, #0f1e16 0%, #0e1a14 100%); border: 1px solid rgba(46,204,113,0.15); transform: rotateY(180deg); }
+  .card-flag    { font-size: 2.6rem; margin-bottom: 12px; line-height: 1; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4)); }
+  .card-country { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.5rem,5vw,2.4rem); font-weight: 700; text-align: center; color: var(--text); line-height: 1.1; letter-spacing: 0.02em; }
+  .card-capital { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.4rem,5vw,2.2rem); font-weight: 700; color: #7de8a8; text-align: center; line-height: 1.1; letter-spacing: 0.02em; }
+
+  .flip-hint { text-align: center; font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); margin-top: -8px; margin-bottom: 16px; }
+
+  /* INPUT */
+  .input-section { display: flex; flex-direction: column; gap: 10px; }
+  .answer-row { display: flex; gap: 8px; }
+  input[type="text"] { flex: 1; padding: 12px 16px; font-family: 'DM Mono', monospace; font-size: 0.95rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 10px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+  input[type="text"]:focus { border-color: var(--gold-border); box-shadow: 0 0 0 3px rgba(201,150,58,0.08); }
+  input[type="text"].locked { opacity: 0.4; pointer-events: none; }
+  input[type="text"]::placeholder { color: var(--text-dim); }
+  .btn { padding: 12px 20px; font-family: 'DM Mono', monospace; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; border: none; border-radius: 10px; cursor: pointer; font-weight: 500; transition: transform 0.1s, opacity 0.15s; }
+  .btn:active { transform: scale(0.97); }
+  .btn-validate { background: var(--gold); color: #0d0f14; box-shadow: 0 3px 14px rgba(201,150,58,0.3); white-space: nowrap; }
+  .btn-validate:hover { opacity: 0.88; }
+  .btn-row { display: flex; gap: 8px; }
+  .btn-wrong { flex: 1; background: var(--red-dim); color: var(--red); border: 1px solid rgba(192,57,43,0.25); }
+  .btn-wrong:hover { background: rgba(192,57,43,0.22); }
+  .btn-right { flex: 1; background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.2); }
+  .btn-right:hover { background: rgba(46,204,113,0.2); }
+  .feedback { min-height: 36px; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; border-radius: 8px; padding: 0 14px; transition: opacity 0.25s; }
+  .feedback.correct { background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.18); }
+  .feedback.wrong   { background: var(--red-dim);   color: var(--red);   border: 1px solid rgba(192,57,43,0.18); }
+  .feedback.confirm { background: rgba(201,150,58,0.1); color: var(--gold); border: 1px solid rgba(201,150,58,0.25); }
+  .feedback.hidden  { opacity: 0; pointer-events: none; }
+
+  /* END SCREEN */
+  .end-screen { display: none; flex-direction: column; align-items: center; gap: 24px; padding: 8px 0; }
+  .end-screen.visible { display: flex; }
+  .end-title { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 700; text-align: center; color: var(--text); letter-spacing: 0.04em; }
+  .end-score-wrap { text-align: center; }
+  .end-score { font-family: 'Cormorant Garamond', serif; font-size: 5rem; font-weight: 700; line-height: 1; color: var(--gold); }
+  .score-label { font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-dim); margin-top: 10px; }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; width: 100%; }
+  .stats-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 8px; text-align: center; }
+  .sc-val { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 700; line-height: 1; }
+  .sc-lbl { font-size: 0.55rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-dim); margin-top: 5px; }
+  .sc-g .sc-val { color: var(--green); } .sc-r .sc-val { color: var(--red); } .sc-o .sc-val { color: var(--gold); }
+  .hard-list { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .hard-list-title { padding: 10px 16px; background: var(--surface2); font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); border-bottom: 1px solid var(--border); }
+  .hard-item { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 12px; padding: 8px 16px; border-bottom: 1px solid var(--border); font-size: 0.78rem; }
+  .hard-item:last-child { border-bottom: none; }
+  .hcountry { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 600; }
+  .hcap { color: #7de8a8; }
+  .hret { font-size: 0.62rem; background: var(--red-dim); color: var(--red); border-radius: 10px; padding: 2px 8px; border: 1px solid rgba(192,57,43,0.2); flex-shrink: 0; }
+  .end-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .btn-restart { background: var(--surface2); color: var(--text); border: 1px solid var(--border); padding: 13px 28px; font-size: 0.75rem; letter-spacing: 0.15em; }
+  .btn-restart:hover { border-color: var(--gold-border); color: var(--gold); }
+  .btn-newgame { background: var(--gold); color: #0d0f14; padding: 13px 28px; font-size: 0.75rem; letter-spacing: 0.15em; box-shadow: 0 3px 14px rgba(201,150,58,0.3); }
+  .btn-newgame:hover { opacity: 0.88; }
+
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
+  .shake { animation: shake 0.3s ease; }
+  @keyframes glow-green { 0%{box-shadow:0 0 0 0 rgba(46,204,113,0.35)} 60%{box-shadow:0 0 0 12px rgba(46,204,113,0)} 100%{box-shadow:0 0 0 0 rgba(46,204,113,0)} }
+  .glow-green { animation: glow-green 0.5s ease; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="rule"><h1>Capitales</h1></div>
+    <div class="subtitle" id="main-subtitle">Quiz géographique</div>
+  </header>
+
+  <!-- SETUP SCREEN -->
+  <div id="setup-screen">
+    <div class="setup-count-wrap">
+      <div class="setup-label">Combien de pays pour cette partie ?</div>
+      <div class="count-display" id="count-display">197</div>
+      <div class="count-sub">pays</div>
+      <div class="slider-wrap">
+        <input type="range" id="count-slider" min="5" max="197" value="197" step="1" oninput="onSlider(this.value)">
+      </div>
+      <div class="preset-btns">
+        <button class="preset-btn" onclick="setCount(10)">10</button>
+        <button class="preset-btn" onclick="setCount(25)">25</button>
+        <button class="preset-btn" onclick="setCount(50)">50</button>
+        <button class="preset-btn" onclick="setCount(100)">100</button>
+        <button class="preset-btn" onclick="setCount(197)">Tous</button>
+      </div>
+    </div>
+    <button class="btn btn-start" onclick="startGame()">Commencer</button>
+  </div>
+
+  <!-- GAME AREA -->
+  <div id="game-area" style="display:none">
+    <div class="progress-wrap">
+      <div class="progress-track">
+        <div class="progress-fill"         id="prog-fill"         style="width:0%"></div>
+        <div class="progress-fill-pending" id="prog-fill-pending" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="card-stage">
+      <div class="card" id="card" onclick="flipCard()">
+        <div class="card-face card-front">
+          <div class="card-flag" id="card-flag">🌍</div>
+          <div class="card-country" id="card-country">—</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="card-flag" id="back-flag">🌍</div>
+          <div class="card-capital" id="card-capital">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="flip-hint">Cliquez la carte pour révéler</div>
+    <div class="input-section">
+      <div class="answer-row">
+        <input type="text" id="answer-input" placeholder="Entrez la capitale…"
+               autocomplete="off" autocorrect="off" spellcheck="false" oninput="onInput()"/>
+        <button class="btn btn-validate" onclick="checkAnswer()">Valider</button>
+      </div>
+      <div class="feedback hidden" id="feedback"></div>
+      <div class="btn-row" id="manual-btns" style="display:none">
+        <button class="btn btn-wrong" onclick="doWrong()">✗ Remettre en bas</button>
+        <button class="btn btn-right" onclick="doRight()">✓ C'était correct</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- END SCREEN -->
+  <div class="end-screen" id="end-screen">
+    <div class="end-title">Partie terminée</div>
+    <div class="end-score-wrap">
+      <div class="end-score" id="end-score">—</div>
+      <div class="score-label">de réussite</div>
+    </div>
+    <div class="stats-grid">
+      <div class="stats-card sc-g"><div class="sc-val" id="es-correct">0</div><div class="sc-lbl">Bonnes<br>réponses</div></div>
+      <div class="stats-card sc-r"><div class="sc-val" id="es-wrong">0</div>  <div class="sc-lbl">Mauvaises<br>réponses</div></div>
+      <div class="stats-card sc-o"><div class="sc-val" id="es-retries">0</div><div class="sc-lbl">Cartes<br>répétées</div></div>
+    </div>
+    <div class="hard-list" id="hard-list" style="display:none">
+      <div class="hard-list-title">🔁 Capitales les plus difficiles</div>
+      <div id="hard-items"></div>
+    </div>
+    <div class="end-btns">
+      <button class="btn btn-restart"  onclick="replayGame()">↺ Rejouer</button>
+      <button class="btn btn-newgame" onclick="goSetup()">✦ Nouvelle partie</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA (Jetpunk spellings) ───────────────────────────────────────────────
+const ALL_CARDS = [
+  // Europe
+  {country:"Albanie",              capital:"Tirana",                    flag:"🇦🇱"},
+  {country:"Allemagne",            capital:"Berlin",                    flag:"🇩🇪"},
+  {country:"Andorre",              capital:"Andorre-la-Vieille",        flag:"🇦🇩"},
+  {country:"Autriche",             capital:"Vienne",                    flag:"🇦🇹"},
+  {country:"Belgique",             capital:"Bruxelles",                 flag:"🇧🇪"},
+  {country:"Biélorussie",          capital:"Minsk",                     flag:"🇧🇾"},
+  {country:"Bosnie-Herzégovine",   capital:"Sarajevo",                  flag:"🇧🇦"},
+  {country:"Bulgarie",             capital:"Sofia",                     flag:"🇧🇬"},
+  {country:"Croatie",              capital:"Zagreb",                    flag:"🇭🇷"},
+  {country:"Danemark",             capital:"Copenhague",                flag:"🇩🇰"},
+  {country:"Espagne",              capital:"Madrid",                    flag:"🇪🇸"},
+  {country:"Estonie",              capital:"Tallinn",                   flag:"🇪🇪"},
+  {country:"Finlande",             capital:"Helsinki",                  flag:"🇫🇮"},
+  {country:"France",               capital:"Paris",                     flag:"🇫🇷"},
+  {country:"Grèce",                capital:"Athènes",                   flag:"🇬🇷"},
+  {country:"Hongrie",              capital:"Budapest",                  flag:"🇭🇺"},
+  {country:"Irlande",              capital:"Dublin",                    flag:"🇮🇪"},
+  {country:"Islande",              capital:"Reykjavik",                 flag:"🇮🇸"},
+  {country:"Italie",               capital:"Rome",                      flag:"🇮🇹"},
+  {country:"Kosovo",               capital:"Pristina",                  flag:"🇽🇰"},
+  {country:"Lettonie",             capital:"Riga",                      flag:"🇱🇻"},
+  {country:"Liechtenstein",        capital:"Vaduz",                     flag:"🇱🇮"},
+  {country:"Lituanie",             capital:"Vilnius",                   flag:"🇱🇹"},
+  {country:"Luxembourg",           capital:"Luxembourg",                flag:"🇱🇺"},
+  {country:"Macédoine du Nord",    capital:"Skopje",                    flag:"🇲🇰"},
+  {country:"Malte",                capital:"La Valette",                flag:"🇲🇹"},
+  {country:"Moldavie",             capital:"Chișinău",                  flag:"🇲🇩"},
+  {country:"Monaco",               capital:"Monaco",                    flag:"🇲🇨"},
+  {country:"Monténégro",           capital:"Podgorica",                 flag:"🇲🇪"},
+  {country:"Norvège",              capital:"Oslo",                      flag:"🇳🇴"},
+  {country:"Pays-Bas",             capital:"Amsterdam",                 flag:"🇳🇱"},
+  {country:"Pologne",              capital:"Varsovie",                  flag:"🇵🇱"},
+  {country:"Portugal",             capital:"Lisbonne",                  flag:"🇵🇹"},
+  {country:"République Tchèque",   capital:"Prague",                    flag:"🇨🇿"},
+  {country:"Roumanie",             capital:"Bucarest",                  flag:"🇷🇴"},
+  {country:"Royaume-Uni",          capital:"Londres",                   flag:"🇬🇧"},
+  {country:"Russie",               capital:"Moscou",                    flag:"🇷🇺"},
+  {country:"Saint-Marin",          capital:"Saint-Marin",               flag:"🇸🇲"},
+  {country:"Serbie",               capital:"Belgrade",                  flag:"🇷🇸"},
+  {country:"Slovaquie",            capital:"Bratislava",                flag:"🇸🇰"},
+  {country:"Slovénie",             capital:"Ljubljana",                 flag:"🇸🇮"},
+  {country:"Suède",                capital:"Stockholm",                 flag:"🇸🇪"},
+  {country:"Suisse",               capital:"Berne",                     flag:"🇨🇭"},
+  {country:"Turquie",              capital:"Ankara",                    flag:"🇹🇷"},
+  {country:"Ukraine",              capital:"Kiev",                      flag:"🇺🇦"},
+  {country:"Vatican",              capital:"Vatican",                   flag:"🇻🇦"},
+  // Amérique du Nord
+  {country:"Antigua-et-Barbuda",                 capital:"Saint John's",      flag:"🇦🇬"},
+  {country:"Bahamas",                            capital:"Nassau",            flag:"🇧🇸"},
+  {country:"Barbade",                            capital:"Bridgetown",        flag:"🇧🇧"},
+  {country:"Belize",                             capital:"Belmopan",          flag:"🇧🇿"},
+  {country:"Canada",                             capital:"Ottawa",            flag:"🇨🇦"},
+  {country:"Costa Rica",                         capital:"San José",          flag:"🇨🇷"},
+  {country:"Cuba",                               capital:"La Havane",         flag:"🇨🇺"},
+  {country:"Dominique",                          capital:"Roseau",            flag:"🇩🇲"},
+  {country:"États-Unis",                         capital:"Washington",        flag:"🇺🇸"},
+  {country:"Grenade",                            capital:"Saint George's",    flag:"🇬🇩"},
+  {country:"Guatemala",                          capital:"Guatemala",         flag:"🇬🇹"},
+  {country:"Haïti",                              capital:"Port-au-Prince",    flag:"🇭🇹"},
+  {country:"Honduras",                           capital:"Tegucigalpa",       flag:"🇭🇳"},
+  {country:"Jamaïque",                           capital:"Kingston",          flag:"🇯🇲"},
+  {country:"Mexique",                            capital:"Mexico",            flag:"🇲🇽"},
+  {country:"Nicaragua",                          capital:"Managua",           flag:"🇳🇮"},
+  {country:"Panama",                             capital:"Panama",            flag:"🇵🇦"},
+  {country:"République Dominicaine",             capital:"Saint-Domingue",    flag:"🇩🇴"},
+  {country:"Saint-Christophe-et-Niévès",         capital:"Basseterre",        flag:"🇰🇳"},
+  {country:"Saint-Vincent-et-les-Grenadines",    capital:"Kingstown",         flag:"🇻🇨"},
+  {country:"Sainte-Lucie",                       capital:"Castries",          flag:"🇱🇨"},
+  {country:"Salvador",                           capital:"San Salvador",      flag:"🇸🇻"},
+  {country:"Trinité-et-Tobago",                  capital:"Port-d'Espagne",    flag:"🇹🇹"},
+  // Asie
+  {country:"Afghanistan",          capital:"Kaboul",                    flag:"🇦🇫"},
+  {country:"Arabie Saoudite",      capital:"Riyad",                     flag:"🇸🇦"},
+  {country:"Arménie",              capital:"Erevan",                    flag:"🇦🇲"},
+  {country:"Azerbaïdjan",          capital:"Bakou",                     flag:"🇦🇿"},
+  {country:"Bahreïn",              capital:"Manama",                    flag:"🇧🇭"},
+  {country:"Bangladesh",           capital:"Dacca",                     flag:"🇧🇩"},
+  {country:"Bhoutan",              capital:"Thimphou",                  flag:"🇧🇹"},
+  {country:"Birmanie",             capital:"Naypyidaw",                 flag:"🇲🇲"},
+  {country:"Brunei",               capital:"Bandar Seri Begawan",       flag:"🇧🇳"},
+  {country:"Cambodge",             capital:"Phnom Penh",                flag:"🇰🇭"},
+  {country:"Chine",                capital:"Pékin",                     flag:"🇨🇳"},
+  {country:"Chypre",               capital:"Nicosie",                   flag:"🇨🇾"},
+  {country:"Corée du Nord",        capital:"Pyongyang",                 flag:"🇰🇵"},
+  {country:"Corée du Sud",         capital:"Séoul",                     flag:"🇰🇷"},
+  {country:"Émirats Arabes Unis",  capital:"Abou Dabi",                 flag:"🇦🇪"},
+  {country:"Géorgie",              capital:"Tbilissi",                  flag:"🇬🇪"},
+  {country:"Inde",                 capital:"New Delhi",                 flag:"🇮🇳"},
+  {country:"Indonésie",            capital:"Jakarta",                   flag:"🇮🇩"},
+  {country:"Irak",                 capital:"Bagdad",                    flag:"🇮🇶"},
+  {country:"Iran",                 capital:"Téhéran",                   flag:"🇮🇷"},
+  {country:"Israël",               capital:"Jérusalem",                 flag:"🇮🇱"},
+  {country:"Japon",                capital:"Tokyo",                     flag:"🇯🇵"},
+  {country:"Jordanie",             capital:"Amman",                     flag:"🇯🇴"},
+  {country:"Kazakhstan",           capital:"Astana",                    flag:"🇰🇿"},
+  {country:"Kirghizistan",         capital:"Bichkek",                   flag:"🇰🇬"},
+  {country:"Koweït",               capital:"Koweït",                    flag:"🇰🇼"},
+  {country:"Laos",                 capital:"Vientiane",                 flag:"🇱🇦"},
+  {country:"Liban",                capital:"Beyrouth",                  flag:"🇱🇧"},
+  {country:"Malaisie",             capital:"Kuala Lumpur",              flag:"🇲🇾"},
+  {country:"Maldives",             capital:"Malé",                      flag:"🇲🇻"},
+  {country:"Mongolie",             capital:"Oulan-Bator",               flag:"🇲🇳"},
+  {country:"Népal",                capital:"Katmandou",                 flag:"🇳🇵"},
+  {country:"Oman",                 capital:"Mascate",                   flag:"🇴🇲"},
+  {country:"Ouzbékistan",          capital:"Tachkent",                  flag:"🇺🇿"},
+  {country:"Pakistan",             capital:"Islamabad",                 flag:"🇵🇰"},
+  {country:"Philippines",          capital:"Manille",                   flag:"🇵🇭"},
+  {country:"Qatar",                capital:"Doha",                      flag:"🇶🇦"},
+  {country:"Singapour",            capital:"Singapour",                 flag:"🇸🇬"},
+  {country:"Sri Lanka",            capital:"Sri Jayawardenapura Kotte", flag:"🇱🇰"},
+  {country:"Syrie",                capital:"Damas",                     flag:"🇸🇾"},
+  {country:"Tadjikistan",          capital:"Douchanbé",                 flag:"🇹🇯"},
+  {country:"Taïwan",               capital:"Taipei",                    flag:"🇹🇼"},
+  {country:"Thaïlande",            capital:"Bangkok",                   flag:"🇹🇭"},
+  {country:"Timor Oriental",       capital:"Dili",                      flag:"🇹🇱"},
+  {country:"Turkménistan",         capital:"Achgabat",                  flag:"🇹🇲"},
+  {country:"Viêt Nam",             capital:"Hanoï",                     flag:"🇻🇳"},
+  {country:"Yémen",                capital:"Sanaa",                     flag:"🇾🇪"},
+  // Océanie
+  {country:"Australie",                    capital:"Canberra",      flag:"🇦🇺"},
+  {country:"États Fédérés de Micronésie",  capital:"Palikir",       flag:"🇫🇲"},
+  {country:"Fidji",                        capital:"Suva",          flag:"🇫🇯"},
+  {country:"Îles Marshall",                capital:"Majuro",        flag:"🇲🇭"},
+  {country:"Îles Salomon",                 capital:"Honiara",       flag:"🇸🇧"},
+  {country:"Kiribati",                     capital:"Tarawa-Sud",    flag:"🇰🇮"},
+  {country:"Nauru",                        capital:"Yaren",         flag:"🇳🇷"},
+  {country:"Nouvelle-Zélande",             capital:"Wellington",    flag:"🇳🇿"},
+  {country:"Palaos",                       capital:"Ngerulmud",     flag:"🇵🇼"},
+  {country:"Papouasie-Nouvelle-Guinée",    capital:"Port Moresby", flag:"🇵🇬"},
+  {country:"Samoa",                        capital:"Apia",          flag:"🇼🇸"},
+  {country:"Tonga",                        capital:"Nuku'alofa",    flag:"🇹🇴"},
+  {country:"Tuvalu",                       capital:"Funafuti",      flag:"🇹🇻"},
+  {country:"Vanuatu",                      capital:"Port-Vila",     flag:"🇻🇺"},
+  // Amérique du Sud
+  {country:"Argentine",   capital:"Buenos Aires",  flag:"🇦🇷"},
+  {country:"Bolivie",     capital:"La Paz",        flag:"🇧🇴", alts:["Sucre"]},
+  {country:"Brésil",      capital:"Brasilia",      flag:"🇧🇷"},
+  {country:"Chili",       capital:"Santiago",      flag:"🇨🇱"},
+  {country:"Colombie",    capital:"Bogotá",        flag:"🇨🇴"},
+  {country:"Équateur",    capital:"Quito",         flag:"🇪🇨"},
+  {country:"Guyana",      capital:"Georgetown",    flag:"🇬🇾"},
+  {country:"Paraguay",    capital:"Asunción",      flag:"🇵🇾"},
+  {country:"Pérou",       capital:"Lima",          flag:"🇵🇪"},
+  {country:"Suriname",    capital:"Paramaribo",    flag:"🇸🇷"},
+  {country:"Uruguay",     capital:"Montevideo",    flag:"🇺🇾"},
+  {country:"Venezuela",   capital:"Caracas",       flag:"🇻🇪"},
+  // Afrique
+  {country:"Afrique du Sud",           capital:"Pretoria",       flag:"🇿🇦", alts:["Le Cap","Bloemfontein"]},
+  {country:"Algérie",                  capital:"Alger",          flag:"🇩🇿"},
+  {country:"Angola",                   capital:"Luanda",         flag:"🇦🇴"},
+  {country:"Bénin",                    capital:"Porto-Novo",     flag:"🇧🇯"},
+  {country:"Botswana",                 capital:"Gaborone",       flag:"🇧🇼"},
+  {country:"Burkina Faso",             capital:"Ouagadougou",    flag:"🇧🇫"},
+  {country:"Burundi",                  capital:"Gitega",         flag:"🇧🇮"},
+  {country:"Cameroun",                 capital:"Yaoundé",        flag:"🇨🇲"},
+  {country:"Cap-Vert",                 capital:"Praia",          flag:"🇨🇻"},
+  {country:"Comores",                  capital:"Moroni",         flag:"🇰🇲"},
+  {country:"Côte d'Ivoire",            capital:"Yamoussoukro",   flag:"🇨🇮"},
+  {country:"Djibouti",                 capital:"Djibouti",       flag:"🇩🇯"},
+  {country:"Égypte",                   capital:"Le Caire",       flag:"🇪🇬"},
+  {country:"Érythrée",                 capital:"Asmara",         flag:"🇪🇷"},
+  {country:"Eswatini",                 capital:"Mbabane",        flag:"🇸🇿"},
+  {country:"Éthiopie",                 capital:"Addis-Abeba",    flag:"🇪🇹"},
+  {country:"Gabon",                    capital:"Libreville",     flag:"🇬🇦"},
+  {country:"Gambie",                   capital:"Banjul",         flag:"🇬🇲"},
+  {country:"Ghana",                    capital:"Accra",          flag:"🇬🇭"},
+  {country:"Guinée",                   capital:"Conakry",        flag:"🇬🇳"},
+  {country:"Guinée Équatoriale",       capital:"Ciudad de la Paz", flag:"🇬🇶"},
+  {country:"Guinée-Bissau",            capital:"Bissau",         flag:"🇬🇼"},
+  {country:"Kenya",                    capital:"Nairobi",        flag:"🇰🇪"},
+  {country:"Lesotho",                  capital:"Maseru",         flag:"🇱🇸"},
+  {country:"Liberia",                  capital:"Monrovia",       flag:"🇱🇷"},
+  {country:"Libye",                    capital:"Tripoli",        flag:"🇱🇾"},
+  {country:"Madagascar",               capital:"Antananarivo",   flag:"🇲🇬"},
+  {country:"Malawi",                   capital:"Lilongwe",       flag:"🇲🇼"},
+  {country:"Mali",                     capital:"Bamako",         flag:"🇲🇱"},
+  {country:"Maroc",                    capital:"Rabat",          flag:"🇲🇦"},
+  {country:"Maurice",                  capital:"Port-Louis",     flag:"🇲🇺"},
+  {country:"Mauritanie",               capital:"Nouakchott",     flag:"🇲🇷"},
+  {country:"Mozambique",               capital:"Maputo",         flag:"🇲🇿"},
+  {country:"Namibie",                  capital:"Windhoek",       flag:"🇳🇦"},
+  {country:"Niger",                    capital:"Niamey",         flag:"🇳🇪"},
+  {country:"Nigeria",                  capital:"Abuja",          flag:"🇳🇬"},
+  {country:"Ouganda",                  capital:"Kampala",        flag:"🇺🇬"},
+  {country:"République Centrafricaine",capital:"Bangui",         flag:"🇨🇫"},
+  {country:"Rép. Dém. du Congo",       capital:"Kinshasa",       flag:"🇨🇩"},
+  {country:"Rép. du Congo",            capital:"Brazzaville",    flag:"🇨🇬"},
+  {country:"Rwanda",                   capital:"Kigali",         flag:"🇷🇼"},
+  {country:"Sao Tomé-et-Principe",     capital:"Sao Tomé",       flag:"🇸🇹"},
+  {country:"Sénégal",                  capital:"Dakar",          flag:"🇸🇳"},
+  {country:"Seychelles",               capital:"Victoria",       flag:"🇸🇨"},
+  {country:"Sierra Leone",             capital:"Freetown",       flag:"🇸🇱"},
+  {country:"Somalie",                  capital:"Mogadiscio",     flag:"🇸🇴"},
+  {country:"Soudan",                   capital:"Khartoum",       flag:"🇸🇩"},
+  {country:"Soudan du Sud",            capital:"Djouba",         flag:"🇸🇸"},
+  {country:"Tanzanie",                 capital:"Dodoma",         flag:"🇹🇿"},
+  {country:"Tchad",                    capital:"Ndjamena",       flag:"🇹🇩"},
+  {country:"Togo",                     capital:"Lomé",           flag:"🇹🇬"},
+  {country:"Tunisie",                  capital:"Tunis",          flag:"🇹🇳"},
+  {country:"Zambie",                   capital:"Lusaka",         flag:"🇿🇲"},
+  {country:"Zimbabwe",                 capital:"Harare",         flag:"🇿🇼"},
+];
+
+const TOTAL = ALL_CARDS.length;
+
+// ─── STATE ──────────────────────────────────────────────────────────────────
+let deck = [], stats = {}, correctCount = 0, firstTimeFailed = 0, totalCards = 0;
+let cardFlipped = false, answered = false, transitioning = false, confirmMode = false;
+let chosenCount = TOTAL;
+let activeCards = [];
+
+// ─── NORMALIZE ──────────────────────────────────────────────────────────────
+// Strip accents, lowercase, replace hyphens/apostrophes/punctuation with space
+function norm(s) {
+  return s.trim().toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[-–—'''`]/g, " ")
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function shuffle(a) {
+  const b = [...a];
+  for (let i = b.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1)); [b[i],b[j]]=[b[j],b[i]];
+  }
+  return b;
+}
+
+// ─── SETUP ──────────────────────────────────────────────────────────────────
+function onSlider(v) {
+  chosenCount = parseInt(v);
+  document.getElementById('count-display').textContent = chosenCount === TOTAL ? 'Tous' : chosenCount;
+}
+
+function setCount(n) {
+  chosenCount = Math.min(n, TOTAL);
+  document.getElementById('count-slider').value = chosenCount;
+  document.getElementById('count-display').textContent = chosenCount === TOTAL ? 'Tous' : chosenCount;
+}
+
+function goSetup() {
+  document.getElementById('end-screen').classList.remove('visible');
+  document.getElementById('game-area').style.display = 'none';
+  document.getElementById('setup-screen').style.display = 'flex';
+  document.getElementById('main-subtitle').textContent = 'Quiz géographique';
+}
+
+function startGame() {
+  document.getElementById('setup-screen').style.display = 'none';
+  activeCards = shuffle(ALL_CARDS).slice(0, chosenCount);
+  document.getElementById('main-subtitle').textContent =
+    chosenCount === TOTAL ? `${TOTAL} pays · Quiz géographique` : `${chosenCount} pays · Quiz géographique`;
+  initGame();
+}
+
+// ─── GAME ────────────────────────────────────────────────────────────────────
+function initGame() {
+  deck = shuffle([...activeCards]);
+  stats = {};
+  activeCards.forEach(c => { stats[c.country] = { retries: 0, failedFirst: false, capital: c.capital, flag: c.flag }; });
+  correctCount = 0; firstTimeFailed = 0; totalCards = deck.length;
+  document.getElementById('end-screen').classList.remove('visible');
+  document.getElementById('game-area').style.display = '';
+  document.getElementById('hard-list').style.display = 'none';
+  document.getElementById('hard-items').innerHTML = '';
+  updateUI();
+  showCurrentCard();
+}
+
+function replayGame() {
+  // Replay same set of cards, reshuffled
+  document.getElementById('end-screen').classList.remove('visible');
+  initGame();
+}
+
+// ─── CARD CONTENT HELPERS ───────────────────────────────────────────────────
+// Load FRONT face only (card is showing front, safe to update back in background)
+function loadFront(c) {
+  document.getElementById('card-flag').textContent    = c.flag;
+  document.getElementById('card-country').textContent = c.country;
+}
+// Load BACK face only (card is showing back, safe to update front in background)
+function loadBack(c) {
+  document.getElementById('back-flag').textContent    = c.flag;
+  document.getElementById('card-capital').textContent = c.capital;
+}
+
+// ─── SHOW CARD ───────────────────────────────────────────────────────────────
+function showCurrentCard() {
+  if (!deck.length) { showEnd(); return; }
+  const c = deck[0];
+  // Card is face-up (front visible): load front now, back is hidden so safe to load too
+  loadFront(c);
+  loadBack(c);
+  const cardEl = document.getElementById('card');
+  cardEl.classList.remove('flipped', 'no-click');
+  cardFlipped = false; answered = false; transitioning = false; confirmMode = false;
+  document.getElementById('answer-input').value = '';
+  document.getElementById('answer-input').classList.remove('locked');
+  setFeedback('', '');
+  document.getElementById('manual-btns').style.display = 'none';
+  document.getElementById('answer-input').focus({ preventScroll: true });
+}
+
+// ─── FLIP (manual click) ─────────────────────────────────────────────────────
+function flipCard() {
+  if (answered || transitioning || confirmMode) return;
+
+  if (!cardFlipped) {
+    // Front → back: reveal answer. Count as failure. Enter confirm mode.
+    cardFlipped = true;
+    document.getElementById('card').classList.add('flipped');
+
+    const c = deck[0];
+    if (!stats[c.country].failedFirst) {
+      stats[c.country].failedFirst = true;
+      firstTimeFailed++;
+    }
+    stats[c.country].retries++;
+    updateUI();
+
+    // Once flip-to-back animation ends, unlock input and ask user to retype
+    transitioning = true;
+    setTimeout(() => {
+      transitioning = false;
+      confirmMode = true;
+      document.getElementById('answer-input').value = '';
+      document.getElementById('answer-input').classList.remove('locked');
+      setFeedback('Recopiez la capitale pour continuer…', 'confirm');
+      document.getElementById('answer-input').focus({ preventScroll: true });
+    }, 640);
+  }
+  // No else: card cannot be flipped back manually anymore — confirmDone handles it
+}
+
+// ─── UPDATE UI ───────────────────────────────────────────────────────────────
+function updateUI() {
+  const donePct    = totalCards > 0 ? Math.round((totalCards - deck.length) / totalCards * 100) : 0;
+  const failedPct  = totalCards > 0 ? Math.round(firstTimeFailed / totalCards * 100) : 0;
+  // "pending" = failed cards not yet re-answered correctly, capped so both don't exceed 100%
+  const pendingPct = Math.max(0, Math.min(failedPct, 100 - donePct));
+  document.getElementById('prog-fill').style.width         = donePct    + '%';
+  document.getElementById('prog-fill-pending').style.width = pendingPct + '%';
+}
+
+function setFeedback(msg, type) {
+  const el = document.getElementById('feedback');
+  el.textContent = msg;
+  el.className = 'feedback' + (type ? ' ' + type : ' hidden');
+}
+
+// ─── ANSWER CHECK ────────────────────────────────────────────────────────────
+function isCorrect(given, c) {
+  const candidates = [c.capital, ...(c.alts || [])];
+  return candidates.some(cap => {
+    const ok = norm(cap);
+    return given === ok || (given.startsWith(ok) && ok.length >= 3);
+  });
+}
+
+function onInput() {
+  if (answered) return;
+  const val = document.getElementById('answer-input').value;
+  if (!val.trim()) return;
+  if (confirmMode) {
+    if (isCorrect(norm(val), deck[0])) confirmDone();
+    return;
+  }
+  if (isCorrect(norm(val), deck[0])) checkAnswer();
+}
+
+function checkAnswer() {
+  if (answered) return;
+  if (confirmMode) {
+    const val = document.getElementById('answer-input').value;
+    if (isCorrect(norm(val), deck[0])) confirmDone();
+    return;
+  }
+  const val = document.getElementById('answer-input').value;
+  if (!val.trim()) return;
+  const c = deck[0];
+  const correct = isCorrect(norm(val), c);
+
+  if (correct) {
+    answered = true;
+    setFeedback('✓ Correct !', 'correct');
+    document.getElementById('card').classList.add('glow-green');
+    setTimeout(() => document.getElementById('card').classList.remove('glow-green'), 500);
+    document.getElementById('answer-input').classList.add('locked');
+    document.getElementById('manual-btns').style.display = 'none';
+    if (!stats[c.country].failedFirst && !stats[c.country].succeededFirst) {
+      stats[c.country].succeededFirst = true;
+      correctCount++;
+    }
+    deck.shift();
+    updateUI();
+    setTimeout(() => showCurrentCard(), 950);
+  } else {
+    answered = true;
+    setFeedback('❌ La capitale est : ' + c.capital, 'wrong');
+    document.getElementById('card').classList.add('shake');
+    setTimeout(() => document.getElementById('card').classList.remove('shake'), 300);
+    document.getElementById('answer-input').classList.add('locked');
+    document.getElementById('manual-btns').style.display = 'flex';
+    stats[c.country].retries++;
+    updateUI();
+    // Back content is already correct (loaded in showCurrentCard). Flip to reveal.
+    transitioning = true;
+    setTimeout(() => {
+      cardFlipped = true;
+      document.getElementById('card').classList.add('flipped');
+      // Once flip-to-back animation ends, front is hidden → pre-load next card's front silently
+      setTimeout(() => {
+        transitioning = false;
+        const next = deck[1];
+        if (next) {
+          document.getElementById('card-flag').textContent    = next.flag;
+          document.getElementById('card-country').textContent = next.country;
+        }
+      }, 640);
+    }, 320);
+  }
+}
+
+function confirmDone() {
+  // User correctly retyped the capital while viewing the back.
+  // Move current card to bottom, pre-load next card's front (hidden), then flip back.
+  confirmMode = false;
+  setFeedback('', '');
+  document.getElementById('answer-input').value = '';
+  document.getElementById('answer-input').classList.add('locked');
+
+  const c = deck.shift(); deck.push(c);
+  updateUI();
+
+  // Pre-load next card's front NOW — back is still visible so front is hidden, safe to update
+  const next = deck[0];
+  loadFront(next);
+
+  // Flip back to front
+  const cardEl = document.getElementById('card');
+  cardEl.classList.add('no-click');
+  cardEl.classList.remove('flipped');
+  cardFlipped = false;
+  transitioning = true;
+
+  setTimeout(() => {
+    // Animation done, front is fully visible — now safe to update back for next card
+    loadBack(next);
+    cardEl.classList.remove('no-click');
+    transitioning = false; answered = false;
+    document.getElementById('answer-input').value = '';
+    document.getElementById('answer-input').classList.remove('locked');
+    setFeedback('', '');
+    document.getElementById('manual-btns').style.display = 'none';
+    document.getElementById('answer-input').focus({ preventScroll: true });
+  }, 640);
+}
+
+function doRight() {
+  // User confirms they knew it — remove from deck, no penalty
+  document.getElementById('manual-btns').style.display = 'none';
+  // Card is currently showing back (flipped). Flip back to front first, then load next.
+  transitioning = true;
+  const cardEl = document.getElementById('card');
+  cardEl.classList.add('no-click');
+  cardEl.classList.remove('flipped');
+  cardFlipped = false;
+  deck.shift();
+  setTimeout(() => {
+    cardEl.classList.remove('no-click');
+    transitioning = false;
+    updateUI();
+    showCurrentCard();
+  }, 640);
+}
+
+function doWrong() {
+  document.getElementById('manual-btns').style.display = 'none';
+  transitioning = true;
+  const cardEl = document.getElementById('card');
+  cardEl.classList.add('no-click');
+  cardEl.classList.remove('flipped');
+  cardFlipped = false;
+  const c = deck.shift(); deck.push(c);
+  if (!stats[c.country].failedFirst) {
+    stats[c.country].failedFirst = true;
+    firstTimeFailed++;
+  }
+  setTimeout(() => {
+    cardEl.classList.remove('no-click');
+    transitioning = false;
+    updateUI();
+    showCurrentCard();
+  }, 640);
+}
+
+function showEnd() {
+  document.getElementById('game-area').style.display = 'none';
+  document.getElementById('end-screen').classList.add('visible');
+  const total = correctCount + firstTimeFailed;
+  document.getElementById('end-score').textContent = (total > 0 ? Math.round(correctCount / total * 100) : 0) + '%';
+  document.getElementById('es-correct').textContent  = correctCount;
+  document.getElementById('es-wrong').textContent    = firstTimeFailed;
+  document.getElementById('es-retries').textContent  = Object.values(stats).reduce((s,v) => s+v.retries, 0);
+  const hard = Object.entries(stats).filter(([,v]) => v.retries > 0)
+    .sort((a,b) => b[1].retries - a[1].retries).slice(0,10);
+  if (hard.length) {
+    document.getElementById('hard-list').style.display = '';
+    document.getElementById('hard-items').innerHTML = hard.map(([country,v]) =>
+      `<div class="hard-item">
+        <span>${v.flag}&nbsp;<span class="hcountry">${country}</span></span>
+        <span class="hcap">${v.capital}</span>
+        <span class="hret">×${v.retries}</span>
+      </div>`).join('');
+  }
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Enter') checkAnswer(); });
+</script>
+</body>
+</html>
