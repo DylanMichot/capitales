@@ -25,7 +25,7 @@
     content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
     background:
       radial-gradient(ellipse at 20% 0%, rgba(201,150,58,0.06) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 100%, rgba(46,204,113,0.04) 0%, transparent 50%);
+      radial-gradient(ellipse at 80% 100%, rgba(201,150,58,0.04) 0%, transparent 50%);
   }
   .container { position: relative; z-index: 1; width: 100%; max-width: 520px; }
 
@@ -93,32 +93,23 @@
   .card.no-click { pointer-events: none; }
   .card-face { position: absolute; inset: 0; border-radius: 18px; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.04) inset; }
   .card-front { background: linear-gradient(160deg, #1c2030 0%, #161922 100%); border: 1px solid rgba(201,150,58,0.18); }
-  .card-back  { background: linear-gradient(160deg, #0f1e16 0%, #0e1a14 100%); border: 1px solid rgba(46,204,113,0.15); transform: rotateY(180deg); }
+  .card-back  { background: linear-gradient(160deg, #1c2030 0%, #161922 100%); border: 1px solid rgba(201,150,58,0.18); transform: rotateY(180deg); }
   .card-flag    { font-size: 2.6rem; margin-bottom: 12px; line-height: 1; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4)); }
   .card-country { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.5rem,5vw,2.4rem); font-weight: 700; text-align: center; color: var(--text); line-height: 1.1; letter-spacing: 0.02em; }
-  .card-capital { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.4rem,5vw,2.2rem); font-weight: 700; color: #7de8a8; text-align: center; line-height: 1.1; letter-spacing: 0.02em; }
+  .card-capital { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.4rem,5vw,2.2rem); font-weight: 700; color: var(--text); text-align: center; line-height: 1.1; letter-spacing: 0.02em; }
 
   .flip-hint { text-align: center; font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); margin-top: -8px; margin-bottom: 16px; }
 
   /* INPUT */
   .input-section { display: flex; flex-direction: column; gap: 10px; }
-  .answer-row { display: flex; gap: 8px; }
-  input[type="text"] { flex: 1; padding: 12px 16px; font-family: 'DM Mono', monospace; font-size: 0.95rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 10px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+  input[type="text"] { width: 100%; padding: 12px 16px; font-family: 'DM Mono', monospace; font-size: 0.95rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 10px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
   input[type="text"]:focus { border-color: var(--gold-border); box-shadow: 0 0 0 3px rgba(201,150,58,0.08); }
   input[type="text"].locked { opacity: 0.4; pointer-events: none; }
   input[type="text"]::placeholder { color: var(--text-dim); }
   .btn { padding: 12px 20px; font-family: 'DM Mono', monospace; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; border: none; border-radius: 10px; cursor: pointer; font-weight: 500; transition: transform 0.1s, opacity 0.15s; }
   .btn:active { transform: scale(0.97); }
-  .btn-validate { background: var(--gold); color: #0d0f14; box-shadow: 0 3px 14px rgba(201,150,58,0.3); white-space: nowrap; }
-  .btn-validate:hover { opacity: 0.88; }
-  .btn-row { display: flex; gap: 8px; }
-  .btn-wrong { flex: 1; background: var(--red-dim); color: var(--red); border: 1px solid rgba(192,57,43,0.25); }
-  .btn-wrong:hover { background: rgba(192,57,43,0.22); }
-  .btn-right { flex: 1; background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.2); }
-  .btn-right:hover { background: rgba(46,204,113,0.2); }
   .feedback { min-height: 36px; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; border-radius: 8px; padding: 0 14px; transition: opacity 0.25s; }
-  .feedback.correct { background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.18); }
-  .feedback.wrong   { background: var(--red-dim);   color: var(--red);   border: 1px solid rgba(192,57,43,0.18); }
+  .feedback.correct { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold-border); }
   .feedback.confirm { background: rgba(201,150,58,0.1); color: var(--gold); border: 1px solid rgba(201,150,58,0.25); }
   .feedback.hidden  { opacity: 0; pointer-events: none; }
 
@@ -147,10 +138,8 @@
   .btn-newgame { background: var(--gold); color: #0d0f14; padding: 13px 28px; font-size: 0.75rem; letter-spacing: 0.15em; box-shadow: 0 3px 14px rgba(201,150,58,0.3); }
   .btn-newgame:hover { opacity: 0.88; }
 
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
-  .shake { animation: shake 0.3s ease; }
-  @keyframes glow-green { 0%{box-shadow:0 0 0 0 rgba(46,204,113,0.35)} 60%{box-shadow:0 0 0 12px rgba(46,204,113,0)} 100%{box-shadow:0 0 0 0 rgba(46,204,113,0)} }
-  .glow-green { animation: glow-green 0.5s ease; }
+  @keyframes glow-gold { 0%{box-shadow:0 0 0 0 rgba(201,150,58,0.35)} 60%{box-shadow:0 0 0 12px rgba(201,150,58,0)} 100%{box-shadow:0 0 0 0 rgba(201,150,58,0)} }
+  .glow-gold { animation: glow-gold 0.5s ease; }
 </style>
 </head>
 <body>
@@ -202,16 +191,9 @@
     </div>
     <div class="flip-hint">Cliquez la carte pour révéler</div>
     <div class="input-section">
-      <div class="answer-row">
-        <input type="text" id="answer-input" placeholder="Entrez la capitale…"
-               autocomplete="off" autocorrect="off" spellcheck="false" oninput="onInput()"/>
-        <button class="btn btn-validate" onclick="checkAnswer()">Valider</button>
-      </div>
+      <input type="text" id="answer-input" placeholder="Entrez la capitale…"
+             autocomplete="off" autocorrect="off" spellcheck="false" oninput="onInput()"/>
       <div class="feedback hidden" id="feedback"></div>
-      <div class="btn-row" id="manual-btns" style="display:none">
-        <button class="btn btn-wrong" onclick="doWrong()">✗ Remettre en bas</button>
-        <button class="btn btn-right" onclick="doRight()">✓ C'était correct</button>
-      </div>
     </div>
   </div>
 
@@ -446,6 +428,8 @@ const ALL_CARDS = [
 ];
 
 const TOTAL = ALL_CARDS.length;
+// Every accepted answer in the file (capitals + alts), normalized — used to catch another country's capital
+const ALL_ANSWERS = new Set(ALL_CARDS.flatMap(c => [c.capital, ...(c.alts || [])].map(norm)));
 
 // ─── STATE ──────────────────────────────────────────────────────────────────
 let deck = [], stats = {}, correctCount = 0, firstTimeFailed = 0, totalCards = 0;
@@ -544,17 +528,17 @@ function showCurrentCard() {
   document.getElementById('answer-input').value = '';
   document.getElementById('answer-input').classList.remove('locked');
   setFeedback('', '');
-  document.getElementById('manual-btns').style.display = 'none';
   document.getElementById('answer-input').focus({ preventScroll: true });
 }
 
-// ─── FLIP (manual click) ─────────────────────────────────────────────────────
+// ─── FLIP (manual click, or another country's capital typed) ────────────────
 function flipCard() {
   if (answered || transitioning || confirmMode) return;
 
   if (!cardFlipped) {
     // Front → back: reveal answer. Count as failure. Enter confirm mode.
     cardFlipped = true;
+    document.getElementById('answer-input').value = '';
     document.getElementById('card').classList.add('flipped');
 
     const c = deck[0];
@@ -605,67 +589,32 @@ function isCorrect(given, c) {
 }
 
 function onInput() {
-  if (answered) return;
-  const val = document.getElementById('answer-input').value;
-  if (!val.trim()) return;
+  if (answered || transitioning) return;
+  const val = norm(document.getElementById('answer-input').value);
+  if (!val) return;
+  const c = deck[0];
   if (confirmMode) {
-    if (isCorrect(norm(val), deck[0])) confirmDone();
+    if (isCorrect(val, c)) confirmDone();
     return;
   }
-  if (isCorrect(norm(val), deck[0])) checkAnswer();
+  if (isCorrect(val, c)) acceptAnswer();
+  else if (ALL_ANSWERS.has(val)) flipCard(); // another country's capital → same as giving up
 }
 
-function checkAnswer() {
-  if (answered) return;
-  if (confirmMode) {
-    const val = document.getElementById('answer-input').value;
-    if (isCorrect(norm(val), deck[0])) confirmDone();
-    return;
-  }
-  const val = document.getElementById('answer-input').value;
-  if (!val.trim()) return;
+function acceptAnswer() {
   const c = deck[0];
-  const correct = isCorrect(norm(val), c);
-
-  if (correct) {
-    answered = true;
-    setFeedback('✓ Correct !', 'correct');
-    document.getElementById('card').classList.add('glow-green');
-    setTimeout(() => document.getElementById('card').classList.remove('glow-green'), 500);
-    document.getElementById('answer-input').classList.add('locked');
-    document.getElementById('manual-btns').style.display = 'none';
-    if (!stats[c.country].failedFirst && !stats[c.country].succeededFirst) {
-      stats[c.country].succeededFirst = true;
-      correctCount++;
-    }
-    deck.shift();
-    updateUI();
-    setTimeout(() => showCurrentCard(), 950);
-  } else {
-    answered = true;
-    setFeedback('❌ La capitale est : ' + c.capital, 'wrong');
-    document.getElementById('card').classList.add('shake');
-    setTimeout(() => document.getElementById('card').classList.remove('shake'), 300);
-    document.getElementById('answer-input').classList.add('locked');
-    document.getElementById('manual-btns').style.display = 'flex';
-    stats[c.country].retries++;
-    updateUI();
-    // Back content is already correct (loaded in showCurrentCard). Flip to reveal.
-    transitioning = true;
-    setTimeout(() => {
-      cardFlipped = true;
-      document.getElementById('card').classList.add('flipped');
-      // Once flip-to-back animation ends, front is hidden → pre-load next card's front silently
-      setTimeout(() => {
-        transitioning = false;
-        const next = deck[1];
-        if (next) {
-          document.getElementById('card-flag').textContent    = next.flag;
-          document.getElementById('card-country').textContent = next.country;
-        }
-      }, 640);
-    }, 320);
+  answered = true;
+  setFeedback('✓ Correct !', 'correct');
+  document.getElementById('card').classList.add('glow-gold');
+  setTimeout(() => document.getElementById('card').classList.remove('glow-gold'), 500);
+  document.getElementById('answer-input').classList.add('locked');
+  if (!stats[c.country].failedFirst && !stats[c.country].succeededFirst) {
+    stats[c.country].succeededFirst = true;
+    correctCount++;
   }
+  deck.shift();
+  updateUI();
+  setTimeout(() => showCurrentCard(), 950);
 }
 
 function confirmDone() {
@@ -698,46 +647,7 @@ function confirmDone() {
     document.getElementById('answer-input').value = '';
     document.getElementById('answer-input').classList.remove('locked');
     setFeedback('', '');
-    document.getElementById('manual-btns').style.display = 'none';
     document.getElementById('answer-input').focus({ preventScroll: true });
-  }, 640);
-}
-
-function doRight() {
-  // User confirms they knew it — remove from deck, no penalty
-  document.getElementById('manual-btns').style.display = 'none';
-  // Card is currently showing back (flipped). Flip back to front first, then load next.
-  transitioning = true;
-  const cardEl = document.getElementById('card');
-  cardEl.classList.add('no-click');
-  cardEl.classList.remove('flipped');
-  cardFlipped = false;
-  deck.shift();
-  setTimeout(() => {
-    cardEl.classList.remove('no-click');
-    transitioning = false;
-    updateUI();
-    showCurrentCard();
-  }, 640);
-}
-
-function doWrong() {
-  document.getElementById('manual-btns').style.display = 'none';
-  transitioning = true;
-  const cardEl = document.getElementById('card');
-  cardEl.classList.add('no-click');
-  cardEl.classList.remove('flipped');
-  cardFlipped = false;
-  const c = deck.shift(); deck.push(c);
-  if (!stats[c.country].failedFirst) {
-    stats[c.country].failedFirst = true;
-    firstTimeFailed++;
-  }
-  setTimeout(() => {
-    cardEl.classList.remove('no-click');
-    transitioning = false;
-    updateUI();
-    showCurrentCard();
   }, 640);
 }
 
@@ -762,7 +672,6 @@ function showEnd() {
   }
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Enter') checkAnswer(); });
 </script>
 </body>
 </html>
